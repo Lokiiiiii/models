@@ -459,10 +459,12 @@ class Controller:
 
     current_step = self.global_step.numpy()
     steps_per_second = self.step_timer.steps_per_second()
-    _log(f"train | step: {current_step: 6d} | "
-         f"steps/sec: {steps_per_second: 6.1f} | "
-         f"samples/sec: {train_stats['loop']['samples/sec']: 6.1f} | "
-         f"output: {_format_output(train_output)}")
+    logline = f"train | step: {current_step: 6d} | "
+    logline += f"steps/sec: {steps_per_second: 6.1f} | "
+    if train_stats:
+      logline += f"samples/sec: {train_stats['loop']['samples/sec']: 6.1f} | "
+    logline += f"output: {_format_output(train_output)}"
+    _log(logline)
 
     train_output["steps_per_second"] = steps_per_second
     self.summary_manager.write_summaries(train_output)

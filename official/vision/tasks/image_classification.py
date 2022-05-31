@@ -246,7 +246,7 @@ class ImageClassificationTask(base_task.Task):
     """
     features, labels = inputs
     n_samples = len(labels)
-    state['train_stats']['loop']['n_samples'] += n_samples
+    self._state['train_stats']['loop']['n_samples'] += n_samples
     is_multilabel = self.task_config.train_data.is_multilabel
     if self.task_config.losses.one_hot and not is_multilabel:
       labels = tf.one_hot(labels, self.task_config.model.num_classes)
