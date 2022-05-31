@@ -359,8 +359,9 @@ class Trainer(_AsyncTrainer):
       self._train_loss.update_state(logs[self.task.loss])
       self.global_step.assign_add(1)
 
-    return self.strategy.run(
+    self.strategy.run(
         step_fn, args=(next(iterator),), options=self._runtime_options)
+    self._state.update(getattr(self.task, '_state', {}))
 
   def eval_begin(self):
     """Sets up metrics."""

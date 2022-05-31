@@ -58,6 +58,7 @@ class Task(tf.Module, metaclass=abc.ABCMeta):
     super().__init__(name=name)
     self._task_config = params
     self._logging_dir = logging_dir
+    self._state = { 'train_stats': { 'loop':{ 'n_samples': 0 } } }
 
   @property
   def task_config(self):
