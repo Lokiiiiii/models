@@ -361,7 +361,9 @@ class Trainer(_AsyncTrainer):
 
     self.strategy.run(
         step_fn, args=(next(iterator),), options=self._runtime_options)
-    self._state.update(getattr(self.task, '_state', {}))
+    _state = getattr(self.task, '_state', {})
+    if _state:
+      self._state['training_stats']['loop']['n_samples'] = _state['training_stats']['loop']['n_samples']
 
   def eval_begin(self):
     """Sets up metrics."""
