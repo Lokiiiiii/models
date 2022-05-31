@@ -448,14 +448,20 @@ class Controller:
       logging.warning(message)
 
     train_output = train_output or {}
+    train_stats = train_output.get('train_stats', {})
+    if 'train_stats' in train_output:
+      del train_output['train_stats']
+
     for action in self.train_actions:
       action(train_output)
     train_output = tf.nest.map_structure(utils.get_value, train_output)
+
 
     current_step = self.global_step.numpy()
     steps_per_second = self.step_timer.steps_per_second()
     _log(f"train | step: {current_step: 6d} | "
          f"steps/sec: {steps_per_second: 6.1f} | "
+         f"samples/sec: {train_stats['loop']['samples/sec']: 6.1f} | "
          f"output: {_format_output(train_output)}")
 
     train_output["steps_per_second"] = steps_per_second

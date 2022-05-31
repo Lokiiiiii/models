@@ -125,6 +125,7 @@ class ResnetRunnable(orbit.StandardTrainer, orbit.StandardEvaluator):
   def train_loop_begin(self):
     """See base class."""
     # Reset all metrics
+    super().train_loop_begin()
     self.train_loss.reset_states()
     self.train_accuracy.reset_states()
 
@@ -173,7 +174,7 @@ class ResnetRunnable(orbit.StandardTrainer, orbit.StandardEvaluator):
     }
     self.time_callback.on_batch_end(self.epoch_helper.batch_index - 1)
     self._epoch_end()
-    return metrics
+    return dict(super().train_loop_end(), **metrics)
 
   def eval_begin(self):
     """See base class."""

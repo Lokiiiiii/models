@@ -87,6 +87,7 @@ class SingleTaskTrainer(orbit.StandardTrainer):
 
   def train_loop_begin(self):
     """Actions to take once, at the beginning of each train loop."""
+    super(SingleTaskTrainer, self).train_loop_begin()
     self.train_loss.reset_states()
     for metric in self.metrics:
       metric.reset_states()
@@ -137,4 +138,4 @@ class SingleTaskTrainer(orbit.StandardTrainer):
       metrics = {metric.name: metric.result() for metric in self.metrics}
       metrics[self.train_loss.name] = self.train_loss.result()
 
-    return metrics
+    return dict(super(SingleTaskTrainer, self).train_loop_end(), **metrics)

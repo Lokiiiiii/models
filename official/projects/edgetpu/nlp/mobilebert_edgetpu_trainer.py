@@ -400,6 +400,7 @@ class MobileBERTEdgeTPUDistillationTrainer(orbit.StandardTrainer,
 
   def train_loop_begin(self):
     """A train loop is similar with the concept of an epoch."""
+    super().train_loop_begin()
     self.train_metrics['feature_transfer_mse'].reset_states()
     self.train_metrics['beta_transfer_loss'].reset_states()
     self.train_metrics['gamma_transfer_loss'].reset_states()
@@ -471,7 +472,8 @@ class MobileBERTEdgeTPUDistillationTrainer(orbit.StandardTrainer,
           checkpoint_number=self.current_step.numpy(),
           check_interval=True)
 
-    return {
+    return dict(super().train_loop_end(), 
+    **{
         'feature_transfer_mse':
             self.train_metrics['feature_transfer_mse'].result(),
         'beta_transfer_loss':
@@ -497,7 +499,7 @@ class MobileBERTEdgeTPUDistillationTrainer(orbit.StandardTrainer,
             self.current_step,
         'optimizer_step':
             self.current_optimizer.iterations,
-    }
+    })
 
   # TODO(longy): We only run evaluation on downstream tasks.
   def eval_begin(self):

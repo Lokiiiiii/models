@@ -44,6 +44,8 @@ from orbit.utils import loop_fns
 
 import tensorflow as tf
 
+import time
+
 
 @dataclasses.dataclass(frozen=True)
 class StandardTrainerOptions:
@@ -105,6 +107,8 @@ class StandardTrainer(runner.AbstractTrainer, metaclass=abc.ABCMeta):
     self._train_dataset = train_dataset
     self._train_iter = None
     self._train_loop_fn = None
+    self._state = { 'train_stats': { 'loop':{} } }
+
 
   def create_train_loop_fn(self):
     """Creates a training loop from the current step function and options.
@@ -114,7 +118,7 @@ class StandardTrainer(runner.AbstractTrainer, metaclass=abc.ABCMeta):
     """
     train_step_fn = self.train_step
     if self._train_options.use_tf_while_loop:
-      loop_fn = loop_fns.create_tf_while_loop_fn(train_step_fn)
+      loop_fn = loop_fns.create_tf_while_loop_fn_with_state(train_step_fn)
       if self._train_options.use_tpu_summary_optimization:
         loop_fn = loop_fns.LoopFnWithSummaries(loop_fn)
       else:
@@ -142,8 +146,7 @@ class StandardTrainer(runner.AbstractTrainer, metaclass=abc.ABCMeta):
 
     if self._train_iter is None:
       self._train_iter = tf.nest.map_structure(iter, self.train_dataset)
-
-    self._train_loop_fn(self._train_iter, num_steps)
+    self._train_loop_fn(iterator=self._train_iter, num_steps=num_steps, state=self._state, reduce_fn=self.state_manager)
     return self.train_loop_end()
 
   def train_loop_begin(self):
@@ -154,7 +157,7 @@ class StandardTrainer(runner.AbstractTrainer, metaclass=abc.ABCMeta):
 
     Note that this method is called before dataset iterator creation.
     """
-    pass
+    self._state['train_stats']['loop']['start_time'] = time.time()
 
   @abc.abstractmethod
   def train_step(self, iterator):
@@ -190,7 +193,10 @@ class StandardTrainer(runner.AbstractTrainer, metaclass=abc.ABCMeta):
       written to logs and as TensorBoard summaries. It can also be a
       nested dictionary, yielding a hierarchy of summary directories.
     """
-    pass
+    self._state['train_stats']['loop']['end_time'] = time.time()
+    self._state['train_stats']['loop']['latency'] = self._state['train_stats']['loop']['end_time']-self._state['train_stats']['loop']['start_time']
+    self._state['train_stats']['loop']['samples/sec'] = self._state['train_stats']['loop']['latency']/self._state['train_stats']['loop']['n_outputs']
+    return self._state
 
   @property
   def train_dataset(self):
@@ -209,6 +215,21 @@ class StandardTrainer(runner.AbstractTrainer, metaclass=abc.ABCMeta):
     """
     self._train_dataset = train_dataset
     self._train_iter = None
+
+  def state_manager(self, state, outputs):
+    """Manages the internal state after every step.
+
+    This default manager counts the number of outputs returned by the step.
+
+    Args:
+      state: The initial state before running the loop.
+      outputs: Output of the training step
+
+    Returns:
+      state: The updated state after running the loop.
+    """
+    state['train_stats']['loop']['n_outputs'] = state['train_stats']['loop'].get('n_outputs', 0) + len(outputs)
+    return state
 
 
 @dataclasses.dataclass(frozen=True)

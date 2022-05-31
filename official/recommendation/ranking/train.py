@@ -54,7 +54,7 @@ class RankingTrainer(base_trainer.Trainer):
         logs[lr_key] = optimizer.learning_rate(self.global_step)
       else:
         logs[lr_key] = optimizer.learning_rate
-    return logs
+    return dict(super().train_loop_end(), **logs)
 
 
 def main(_) -> None:

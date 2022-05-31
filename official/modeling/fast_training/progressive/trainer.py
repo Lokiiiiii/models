@@ -203,7 +203,7 @@ class ProgressiveTrainer(trainer_lib.Trainer):
       # for exporting.
       self._export_ckpt_manager = None
 
-    return logs
+    return dict(super().train_loop_end(), **logs)
 
   def _update_pt_stage_from_ckpt(self, ckpt_file):
     """Update stage properties based on the global_step variable in a ckpt file.

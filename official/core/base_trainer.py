@@ -341,7 +341,7 @@ class Trainer(_AsyncTrainer):
         logs["learning_rate"] = self.optimizer.learning_rate(self.global_step)
     else:
       logs["learning_rate"] = self.optimizer.learning_rate
-    return logs
+    return dict(super().train_loop_end(), **logs)
 
   def train_step(self, iterator):
     """See base class."""

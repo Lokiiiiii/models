@@ -75,6 +75,7 @@ class MultiTaskBaseTrainer(orbit.StandardTrainer):
 
   def train_loop_begin(self):
     """Clean up states that hold losses and metrics."""
+    super().train_loop_begin()
     for _, train_loss_metric in self.training_losses.items():
       train_loss_metric.reset_states()
 
@@ -99,7 +100,7 @@ class MultiTaskBaseTrainer(orbit.StandardTrainer):
           self.optimizer.iterations)
     else:
       result["learning_rate"] = self.optimizer.learning_rate
-    return result
+    return dict(super().train_loop_end(), **result)
 
   @property
   def checkpoint(self):
