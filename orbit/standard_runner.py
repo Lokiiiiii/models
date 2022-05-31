@@ -107,7 +107,7 @@ class StandardTrainer(runner.AbstractTrainer, metaclass=abc.ABCMeta):
     self._train_dataset = train_dataset
     self._train_iter = None
     self._train_loop_fn = None
-    self._state = { 'train_stats': { 'loop':{} } }
+    self._state = { 'train_stats': { 'loop':{ 'n_samples': 0 } } }
 
 
   def create_train_loop_fn(self):
@@ -195,7 +195,7 @@ class StandardTrainer(runner.AbstractTrainer, metaclass=abc.ABCMeta):
     """
     self._state['train_stats']['loop']['end_time'] = time.time()
     self._state['train_stats']['loop']['latency'] = self._state['train_stats']['loop']['end_time']-self._state['train_stats']['loop']['start_time']
-    self._state['train_stats']['loop']['samples/sec'] = self._state['train_stats']['loop']['latency']/self._state['train_stats']['loop']['n_outputs']
+    self._state['train_stats']['loop']['samples/sec'] = self._state['train_stats']['loop']['n_samples']/self._state['train_stats']['loop']['latency']
     return self._state
 
   @property
@@ -223,12 +223,13 @@ class StandardTrainer(runner.AbstractTrainer, metaclass=abc.ABCMeta):
 
     Args:
       state: The initial state before running the loop.
-      outputs: Output of the training step
+      outputs: Output passed from the training step
 
     Returns:
       state: The updated state after running the loop.
     """
-    state['train_stats']['loop']['n_outputs'] = state['train_stats']['loop'].get('n_outputs', 0) + len(outputs)
+    if outputs and 'train_stats' in outputs:
+      state['train_stats']['loop']['n_samples'] += outputs['train_stats']['step']['n_samples']
     return state
 
 

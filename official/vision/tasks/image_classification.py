@@ -245,6 +245,7 @@ class ImageClassificationTask(base_task.Task):
       A dictionary of logs.
     """
     features, labels = inputs
+    n_samples = len(labels)
     is_multilabel = self.task_config.train_data.is_multilabel
     if self.task_config.losses.one_hot and not is_multilabel:
       labels = tf.one_hot(labels, self.task_config.model.num_classes)
@@ -282,7 +283,7 @@ class ImageClassificationTask(base_task.Task):
       grads = optimizer.get_unscaled_gradients(grads)
     optimizer.apply_gradients(list(zip(grads, tvars)))
 
-    logs = {self.loss: loss}
+    logs = {self.loss: loss, 'training_stats': {'step': {'n_samples': n_samples}}}
 
     # Convert logits to softmax for metric computation if needed.
     if hasattr(self.task_config.model,
