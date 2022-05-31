@@ -147,6 +147,8 @@ class StandardTrainer(runner.AbstractTrainer, metaclass=abc.ABCMeta):
     if self._train_iter is None:
       self._train_iter = tf.nest.map_structure(iter, self.train_dataset)
     self._train_loop_fn(iterator=self._train_iter, num_steps=num_steps, state=self._state, reduce_fn=self.state_manager)
+    print('---loki---')
+    print(self._train_loop_fn.pretty_printed_concrete_signatures())
     return self.train_loop_end()
 
   def train_loop_begin(self):
