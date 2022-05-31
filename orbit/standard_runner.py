@@ -118,7 +118,7 @@ class StandardTrainer(runner.AbstractTrainer, metaclass=abc.ABCMeta):
     """
     train_step_fn = self.train_step
     if self._train_options.use_tf_while_loop:
-      loop_fn = loop_fns.create_tf_while_loop_fn_with_state(train_step_fn)
+      loop_fn = loop_fns.create_tf_while_loop_fn(train_step_fn)
       if self._train_options.use_tpu_summary_optimization:
         loop_fn = loop_fns.LoopFnWithSummaries(loop_fn)
       else:
@@ -146,9 +146,7 @@ class StandardTrainer(runner.AbstractTrainer, metaclass=abc.ABCMeta):
 
     if self._train_iter is None:
       self._train_iter = tf.nest.map_structure(iter, self.train_dataset)
-    self._train_loop_fn(iterator=self._train_iter, num_steps=num_steps, state=self._state, reduce_fn=self.state_manager)
-    print('---loki---')
-    print(self._train_loop_fn.pretty_printed_concrete_signatures())
+    self._train_loop_fn(iterator=self._train_iter, num_steps=num_steps)
     return self.train_loop_end()
 
   def train_loop_begin(self):
@@ -217,23 +215,7 @@ class StandardTrainer(runner.AbstractTrainer, metaclass=abc.ABCMeta):
     """
     self._train_dataset = train_dataset
     self._train_iter = None
-
-  def state_manager(self, state, outputs):
-    """Manages the internal state after every step.
-
-    This default manager counts the number of outputs returned by the step.
-
-    Args:
-      state: The initial state before running the loop.
-      outputs: Output passed from the training step
-
-    Returns:
-      state: The updated state after running the loop.
-    """
-    if outputs and 'train_stats' in outputs:
-      state['train_stats']['loop']['n_samples'] += outputs['train_stats']['step']['n_samples']
-    return state
-
+    
 
 @dataclasses.dataclass(frozen=True)
 class StandardEvaluatorOptions:
