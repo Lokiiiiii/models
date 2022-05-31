@@ -196,6 +196,7 @@ class StandardTrainer(runner.AbstractTrainer, metaclass=abc.ABCMeta):
     self._state['train_stats']['loop']['end_time'] = time.time()
     self._state['train_stats']['loop']['latency'] = self._state['train_stats']['loop']['end_time']-self._state['train_stats']['loop']['start_time']
     self._state['train_stats']['loop']['samples/sec'] = self._state['train_stats']['loop']['n_samples']/self._state['train_stats']['loop']['latency']
+    self._state['train_stats']['loop']['n_samples'] = 0
     return self._state
 
   @property
@@ -215,7 +216,7 @@ class StandardTrainer(runner.AbstractTrainer, metaclass=abc.ABCMeta):
     """
     self._train_dataset = train_dataset
     self._train_iter = None
-    
+
 
 @dataclasses.dataclass(frozen=True)
 class StandardEvaluatorOptions:

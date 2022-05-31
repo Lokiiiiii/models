@@ -363,7 +363,7 @@ class Trainer(_AsyncTrainer):
         step_fn, args=(next(iterator),), options=self._runtime_options)
     _state = getattr(self.task, '_state', {})
     if _state:
-      self._state['train_stats']['loop']['n_samples'] = _state['train_stats']['loop']['n_samples']
+      self._state['train_stats']['loop']['n_samples'] += _state['train_stats']['step']['n_samples']
 
   def eval_begin(self):
     """Sets up metrics."""
